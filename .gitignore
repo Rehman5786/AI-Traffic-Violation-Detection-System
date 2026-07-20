@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+
+# Virtual Environment
+.venv/
+venv/
+
+# Environment Variables
+.env
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Logs
+*.log
+
+# Python cache
+.pytest_cache/
+.mypy_cache/
+
+# AI Model Weights
+inference/weights/*.pt
+inference/weights/*.onnx
+
+# Datasets
+datasets/raw/
+datasets/processed/
+
+# Uploaded files
+uploads/
+evidence/
+
+# Node
+frontend/node_modules/
+
+# OS Files
+.DS_Store
+Thumbs.db
