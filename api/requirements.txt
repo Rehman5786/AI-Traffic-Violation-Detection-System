@@ -1,0 +1,14 @@
+ultralytics
+opencv-python
+numpy
+torch
+torchvision
+pandas
+matplotlib
+Pillow
+scipy
+supervision
+filterpy
+lap
+imutils
+cvzone
