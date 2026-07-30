@@ -27,7 +27,7 @@ venv/
 
 # AI Model Weights
 inference/weights/*.pt
-inference/weights/*.onnx
+inference/weights/*.onnx*
 
 # Datasets
 datasets/raw/
