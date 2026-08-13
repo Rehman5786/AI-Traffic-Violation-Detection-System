@@ -1,0 +1,129 @@
+
+# =============================================================================
+# Smart Traffic AI — Docker Compose Orchestration
+# =============================================================================
+# WHY this design:
+#   - Each service (db, api, inference, frontend) is isolated so it can be
+#     built, restarted, and scaled independently. In production, the AI
+#     inference service is the most resource-hungry (GPU/CPU bound) and the
+#     API is I/O bound — coupling them into one container would force you to
+#     scale both together even when only one needs it.
+#   - We use a named volume for Postgres data so the database survives
+#     container recreation (`docker compose down` without `-v`).
+#   - Healthchecks gate service startup so the API doesn't try to connect to
+#     a Postgres instance that hasn't finished initializing yet — this is a
+#     common source of flaky "connection refused" errors in Compose stacks.
+#   - Environment variables are injected via `.env` (never committed) so the
+#     same compose file works identically on a dev laptop, a Raspberry Pi
+#     edge deployment, or a cloud VM.
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL — primary datastore for users, vehicles, violations, evidence,
+  # notifications, cameras, and audit logs.
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: sta_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sta_network
+
+  # ---------------------------------------------------------------------------
+  # FastAPI Backend — REST API, auth, business logic (routers -> services ->
+  # repositories -> DB). Built in Module 3.
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ./api
+      dockerfile: ../docker/Dockerfile.api
+    container_name: sta_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      - VAHAN_API_BASE_URL=${VAHAN_API_BASE_URL}
+      - VAHAN_API_KEY=${VAHAN_API_KEY}
+      - SMS_PROVIDER_API_KEY=${SMS_PROVIDER_API_KEY}
+      - SMS_PROVIDER_SENDER_ID=${SMS_PROVIDER_SENDER_ID}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./api:/app
+      - ./evidence:/app/evidence
+      - ./uploads:/app/uploads
+    networks:
+      - sta_network
+
+  # ---------------------------------------------------------------------------
+  # AI Inference Service — YOLOv8 detection, ByteTrack tracking, PaddleOCR
+  # plate recognition, violation logic. Built in Modules 4-5. Kept as a
+  # separate container so it can later be deployed independently on
+  # edge hardware (e.g. Raspberry Pi + Coral/Jetson) while the API/DB run
+  # centrally.
+  # ---------------------------------------------------------------------------
+  inference:
+    build:
+      context: ./inference
+      dockerfile: ../docker/Dockerfile.inference
+    container_name: sta_inference
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      - API_BASE_URL=http://api:8000
+      - MODEL_WEIGHTS_PATH=/app/weights/yolov8n.pt
+      - DEVICE=${INFERENCE_DEVICE:-cpu}
+    volumes:
+      - ./inference:/app
+      - ./evidence:/app/evidence
+      - ./datasets:/app/datasets
+    networks:
+      - sta_network
+
+  # ---------------------------------------------------------------------------
+  # React Dashboard — built in Module 7.
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    container_name: sta_frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    networks:
+      - sta_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  sta_network:
+    driver: bridge
