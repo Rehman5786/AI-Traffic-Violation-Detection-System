@@ -57,3 +57,4 @@ python-jose==3.5.0
 sqlalchemy==2.0.54
 psycopg[binary]==3.3.6
 uvicorn==0.53.0
+alembic==1.17.1
