@@ -8,6 +8,9 @@ from app.middleware.cors import setup_cors
 from app.middleware.request_logger import request_logger
 from app.api.routes import api_router
 
+from app.exceptions.custom_exceptions import AppException
+from app.exceptions.exception_handlers import app_exception_handler
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -24,6 +27,11 @@ app = FastAPI(
     description="AI-Based Smart Traffic Violation Detection System",
     version="1.0.0",
     lifespan=lifespan,
+)
+
+app.add_exception_handler(
+    AppException,
+    app_exception_handler,
 )
 
 setup_cors(app)
