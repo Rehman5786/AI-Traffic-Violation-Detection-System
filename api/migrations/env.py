@@ -5,6 +5,18 @@ from alembic import context
 from app.db.base import Base
 from app.db.session import engine
 
+from app.db.base import Base
+from app.db.session import engine
+
+# Import all ORM models so Alembic can discover them.
+from app.models.user import User  # noqa: F401, E402
+from app.models.vehicle import Vehicle  # noqa: F401, E402
+from app.models.camera import Camera  # noqa: F401, E402
+from app.models.violation import Violation  # noqa: F401, E402
+from app.models.evidence import Evidence  # noqa: F401, E402
+from app.models.notification import Notification  # noqa: F401, E402
+from app.models.audit_log import AuditLog  # noqa: F401, E402
+
 
 # Alembic Config object
 config = context.config
