@@ -48,3 +48,27 @@ class EmailAlreadyExistsException(AppException):
             message="Email already exists.",
             status_code=409,
         )
+
+
+class VehicleNotFoundException(AppException):
+    """
+    Raised when a requested vehicle does not exist.
+    """
+
+    def __init__(self):
+        super().__init__(
+            message="Vehicle not found.",
+            status_code=404,
+        )
+
+
+class VehicleRegistrationAlreadyExistsException(AppException):
+    """
+    Raised when a vehicle registration number is already registered.
+    """
+
+    def __init__(self):
+        super().__init__(
+            message="Vehicle registration number already exists.",
+            status_code=409,
+        )

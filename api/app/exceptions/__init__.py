@@ -3,6 +3,8 @@ from app.exceptions.custom_exceptions import (
     EmailAlreadyExistsException,
     UserNotFoundException,
     UsernameAlreadyExistsException,
+    VehicleNotFoundException,
+    VehicleRegistrationAlreadyExistsException,
 )
 
 __all__ = [
@@ -10,4 +12,6 @@ __all__ = [
     "EmailAlreadyExistsException",
     "UserNotFoundException",
     "UsernameAlreadyExistsException",
+    "VehicleNotFoundException",
+    "VehicleRegistrationAlreadyExistsException",
 ]
