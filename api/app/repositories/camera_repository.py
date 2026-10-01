@@ -22,6 +22,12 @@ class CameraRepository:
 
         return self.db.scalar(statement)
 
+    def get_by_name(self, name: str) -> Camera | None:
+        statement = select(Camera).where(
+            Camera.name == name
+        )
+        return self.db.scalar(statement)
+
     def get_active_cameras(self) -> list[Camera]:
         """
         Retrieve all active cameras.

@@ -5,6 +5,8 @@ from app.exceptions.custom_exceptions import (
     UsernameAlreadyExistsException,
     VehicleNotFoundException,
     VehicleRegistrationAlreadyExistsException,
+    CameraNotFoundException,
+    CameraNameAlreadyExistsException,
 )
 
 __all__ = [
@@ -14,4 +16,6 @@ __all__ = [
     "UsernameAlreadyExistsException",
     "VehicleNotFoundException",
     "VehicleRegistrationAlreadyExistsException",
+    "CameraNotFoundException",
+    "CameraNameAlreadyExistsException",
 ]

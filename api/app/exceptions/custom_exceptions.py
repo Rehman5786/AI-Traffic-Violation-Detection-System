@@ -72,3 +72,27 @@ class VehicleRegistrationAlreadyExistsException(AppException):
             message="Vehicle registration number already exists.",
             status_code=409,
         )
+
+
+class CameraNotFoundException(AppException):
+    """
+    Raised when a requested camera does not exist.
+    """
+
+    def __init__(self):
+        super().__init__(
+            message="Camera not found.",
+            status_code=404,
+        )
+
+
+class CameraNameAlreadyExistsException(AppException):
+    """
+    Raised when a camera name is already registered.
+    """
+
+    def __init__(self):
+        super().__init__(
+            message="Camera name already exists.",
+            status_code=409,
+        )
